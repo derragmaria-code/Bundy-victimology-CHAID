@@ -1,68 +1,59 @@
-Projet : Prédiction de l’État d’un crime
+# Bundy Victimology – CHAID Analysis
 
-Objectif du projet
-L’objectif est de prédire l’État américain où un crime a été commis à partir des caractéristiques des victimes et des circonstances de leur disparition.
+## Project Overview
+This project applies a CHAID (Chi-square Automatic Interaction Detection) decision tree
+to analyze and predict the U.S. state in which a crime occurred,
+based on victim characteristics and contextual information.
 
-* Variable cible : `State` (WA, UT, CO, FL, OR, ID, …)
-* Variables explicatives :
+The goal is not pure prediction performance,
+but interpretability and understanding which variables
+are most strongly associated with the crime location.
 
-  * `AgeGroup` : catégorie d’âge de la victime
-  * `Month` : mois de la disparition
-  * `Keywords` : indicateurs extraits de Notes ("school", "sorority", "abducted", "home", etc.)
+## Dataset
+The dataset contains documented victims linked to Ted Bundy,
+with the following variables:
 
-Description du dataset
+- Victim name
+- Age
+- Date of disappearance
+- Location (city + state)
+- Notes describing the context of disappearance
 
-* 20 victimes documentées de crimes (principalement Ted Bundy).
-* Variables principales :
+### Feature Engineering
+- `State` extracted from Location (target variable)
+- `AgeGroup` created from Age
+- `Month` extracted from Date
+- Keywords extracted from Notes (school, sorority, abducted, home, etc.)
 
-  | Variable | Type      | Description                     |
-  | -------- | --------- | ------------------------------- |
-  | Victim   | Texte     | Nom de la victime               |
-  | Age      | Numérique | Âge au moment de la disparition |
-  | Date     | Date      | Date de la disparition          |
-  | Location | Texte     | Ville + État                    |
-  | Notes    | Texte     | Contexte de la disparition      |
+All predictors are categorical, making CHAID an appropriate method.
 
-Prétraitement :
+## Methodology
+- CHAID decision tree
+- Chi-square tests used for variable selection and splits
+- Small-node thresholds adjusted due to limited sample size
 
-* Extraction de `State` depuis `Location`
-* Conversion de `Age` en catégories (`Child`, `Teen`, `YoungAdult`, `Adult`)
-* Extraction du `Month` à partir de `Date`
-* Extraction de mots-clés dans `Notes` pour créer des variables qualitatives
+## Interpretation of the CHAID Tree
+- The root node is **Month**, indicating that the month of disappearance
+  is the most statistically discriminant variable for predicting the state.
+- Certain months (e.g. June, December) are strongly associated with
+  specific states such as Utah and Washington.
+- Other months show a geographically dispersed distribution,
+  indicating weaker predictive power.
+- This highlights temporal patterns rather than demographic dominance.
 
-Interprétation de l’arbre CHAID
--Racine : Variable “Month”
+## Key Insight
+The model emphasizes interpretability over prediction.
+It shows how temporal and contextual indicators
+interact to explain geographic crime patterns.
 
-* Le modèle a choisi Month comme premier point de division, indiquant que le mois de disparition est lié à l’État du crime.
-* Le mois de disparition est un facteur discriminant.
+## Tools
+- R
+- CHAID package
+- Basic text feature extraction
 
-- Branche 1 → Node 2 (n = 16)
+## Limitations
+- Small dataset
+- Historical and case-specific data
+- Results should be interpreted analytically, not operationally
 
-* Mois : Jan, Feb, Mar, Apr, May, Jul, Oct, Nov, None
-* Distribution : CO, FL, ID, OR, UT, WA
-* Interprétation : ces mois ne permettent pas de prédire un État dominant, les victimes sont réparties.
 
-- Branche 2 → Node 3 (n = 5)
-
-* Mois : Jun, Aug, Sep, Dec
-* Distribution concentrée sur UT, WA
-* Interprétation : ces mois sont fortement associés à Utah et Washington.
-
-Étapes suivantes
-
-* Tester si d’autres variables (`school`, `sorority`, `abducted`) renforcent la prédiction ou interagissent avec le mois.
-* L’arbre CHAID montre déjà l’ordre d’importance implicite des variables : racine → plus discriminante, nœuds suivants → autres variables significatives.
-## ⚠️ Limitations & Future Work
-
-### Limitations
-- **Taille du dataset** : le projet repose sur ~20 victimes documentées. Ce volume est trop faible pour construire un modèle prédictif robuste ; l’arbre CHAID est donc surtout exploratoire.
-- **Biais historique** : les données concernent principalement Ted Bundy. Elles ne sont pas représentatives de l’ensemble des homicides aux États-Unis.
-- **Variables simplifiées** : les mots-clés extraits des notes sont définis manuellement et en nombre limité. Cela réduit la richesse des informations textuelles.
-- **Sur-apprentissage possible** : avec un petit échantillon et des paramètres permissifs (`minbucket=1`, `minsplit=1`), l’arbre peut sur-apprendre aux données existantes.
-
-### Future Work
-- **Enrichir le dataset** : intégrer davantage de cas d’homicides documentés pour améliorer la robustesse statistique.
-- **Text mining avancé** : utiliser des techniques de NLP (`tidytext`, `tm`) pour extraire automatiquement des mots-clés et thèmes des notes.
-- **Validation croisée** : appliquer des méthodes comme leave-one-out ou k-fold cross-validation pour tester la stabilité du modèle.
-- **Visualisations supplémentaires** : créer des timelines, cartes géographiques et distributions d’âge pour compléter l’arbre CHAID.
-- **Comparaison de modèles** : tester d’autres algorithmes (CART, Random Forest, Logistic Regression) pour comparer les performances.
